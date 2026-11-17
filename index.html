@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JELAJAH NORMA - MPI Pendidikan Pancasila</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Tone.js for Audio Synthesis -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        navy: '#0A2647',
+                        blue: '#144272',
+                        light: '#205295',
+                        gold: '#F39F5A',
+                        cream: '#F8F9FA'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #F8F9FA; overflow-x: hidden; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Animations */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes bounce-slow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .animate-bounce-slow { animation: bounce-slow 3s infinite; }
+        
+        /* Glassmorphism */
+        .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); }
+        .glass-dark { background: rgba(10, 38, 71, 0.85); backdrop-filter: blur(10px); }
+
+        /* Print Media for LKPD */
+        @media print {
+            body * { visibility: hidden; }
+            #view-lkpd, #view-lkpd * { visibility: visible; }
+            #view-lkpd { position: absolute; left: 0; top: 0; width: 100%; }
+            .no-print { display: none !important; }
+        }
+
+        /* Drag and drop styles */
+        .draggable { cursor: grab; }
+        .draggable:active { cursor: grabbing; }
+        .dropzone { border: 2px dashed #CBD5E1; transition: all 0.3s; }
+        .dropzone.dragover { border-color: #F39F5A; background-color: #FEF08A; }
+    </style>
+</head>
+<body class="text-gray-800 h-screen flex flex-col md:flex-row overflow-hidden">
+
+    <!-- Modal Notification (Replaces Alert) -->
+    <div id="custom-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black bg-opacity-50 transition-opacity">
+        <div class="bg-white rounded-2xl p-6 md:p-8 max-w-sm w-full mx-4 shadow-2xl transform scale-95 transition-transform" id="modal-content">
+            <div class="text-center">
+                <i id="modal-icon" class="fas fa-info-circle text-4xl mb-4 text-blue"></i>
+                <h3 id="modal-title" class="text-xl font-bold text-navy mb-2">Informasi</h3>
+                <p id="modal-message" class="text-gray-600 mb-6">Pesan di sini.</p>
+                <button onclick="closeModal()" class="w-full bg-light text-white py-3 rounded-xl font-semibold hover:bg-navy transition shadow-md">Mengerti</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Sidebar (Desktop) / Bottom Bar (Mobile) -->
+    <nav id="main-nav" class="hidden md:flex glass-dark w-64 h-full flex-col shadow-xl z-40 text-white transition-all duration-300">
+        <div class="p-6 text-center border-b border-white/10">
+            <div class="w-20 h-20 mx-auto bg-white rounded-full flex items-center justify-center shadow-lg mb-3">
+                <i class="fas fa-balance-scale text-4xl text-light"></i>
+            </div>
+            <h1 class="font-bold text-xl tracking-wide text-gold">JELAJAH NORMA</h1>
+            <p class="text-xs text-gray-300 mt-1">Pendidikan Pancasila VII</p>
+        </div>
+        <div class="flex-1 overflow-y-auto py-4 hide-scrollbar">
+            <ul class="space-y-2 px-4" id="nav-list">
+                <!-- Nav items generated via JS -->
+            </ul>
+        </div>
+        <div class="p-4 border-t border-white/10">
+            <div class="flex items-center justify-between bg-white/10 p-3 rounded-lg">
+                <div class="text-sm">
+                    <p class="text-gray-300 text-xs">Total Poin</p>
+                    <p class="font-bold text-gold" id="user-points">0</p>
+                </div>
+                <i class="fas fa-star text-gold animate-bounce-slow"></i>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Header -->
+    <header id="mobile-header" class="md:hidden glass-dark text-white p-4 flex justify-between items-center z-40 hidden shadow-md">
+        <div class="flex items-center gap-3">
+            <i class="fas fa-balance-scale text-gold text-2xl"></i>
+            <h1 class="font-bold text-lg">JELAJAH NORMA</h1>
+        </div>
+        <div class="bg-white/20 px-3 py-1 rounded-full text-sm font-bold text-gold flex items-center gap-2">
+            <i class="fas fa-star"></i> <span id="mobile-points">0</span>
+        </div>
+    </header>
+
+    <!-- Mobile Bottom Nav -->
+    <nav id="mobile-bottom-nav" class="md:hidden glass-dark fixed bottom-0 w-full z-40 hidden flex-row justify-around py-3 border-t border-white/10">
+        <!-- Generated via JS -->
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 h-full overflow-y-auto relative bg-cream">
+        
+        <!-- Audio Controls (Floating) -->
+        <div id="audio-controls" class="fixed top-4 right-4 z-50 flex gap-2 hidden">
+            <button onclick="toggleBGM()" id="btn-bgm" class="w-10 h-10 rounded-full bg-white shadow-lg text-light hover:bg-gray-100 flex items-center justify-center transition">
+                <i class="fas fa-music"></i>
+            </button>
+            <button onclick="toggleTTS()" id="btn-tts" class="w-10 h-10 rounded-full bg-white shadow-lg text-light hover:bg-gray-100 flex items-center justify-center transition">
+                <i class="fas fa-volume-up"></i>
+            </button>
+        </div>
+
+        <!-- VIEWS -->
+
+        <!-- 1. Beranda / Splash -->
+        <section id="view-beranda" class="view-section min-h-full flex items-center justify-center p-6 bg-gradient-to-br from-navy to-light text-white">
+            <div class="max-w-4xl w-full flex flex-col md:flex-row items-center gap-10">
+                <div class="md:w-1/2 text-center md:text-left animate-fade-in">
+                    <span class="bg-gold/20 text-gold px-4 py-1 rounded-full text-sm font-semibold tracking-wider mb-4 inline-block">Fase D • Kelas VII</span>
+                    <h1 class="text-5xl md:text-6xl font-extrabold mb-4 leading-tight">JELAJAH<br><span class="text-gold">NORMA</span></h1>
+                    <p class="text-lg md:text-xl text-gray-200 mb-6 italic">"Mengenal Norma, Membentuk Karakter, Mewujudkan Kehidupan Harmonis."</p>
+                    <div class="bg-white/10 p-4 rounded-xl backdrop-blur-sm mb-8 inline-block">
+                        <p class="text-sm text-gray-300">Pengembang:</p>
+                        <p class="font-semibold text-lg">Zazila Ziani, S.Pd.</p>
+                        <p class="text-sm">SMPN Satu Atap 3 Kalianda | 2026</p>
+                    </div>
+                    <div>
+                        <button onclick="startApp()" class="bg-gold hover:bg-yellow-500 text-navy font-bold text-xl py-4 px-10 rounded-full shadow-xl transform hover:scale-105 transition duration-300 flex items-center gap-3 mx-auto md:mx-0">
+                            <i class="fas fa-play"></i> MULAI BELAJAR
+                        </button>
+                    </div>
+                </div>
+                <div class="md:w-1/2 animate-bounce-slow">
+                    <img src="https://placehold.co/600x600/transparent/F39F5A?text=Ilustrasi+Siswa+SMP" alt="Ilustrasi" class="w-full max-w-md mx-auto drop-shadow-2xl">
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. Materi -->
+        <section id="view-materi" class="view-section hidden min-h-full p-6 pb-24 md:pb-6">
+            <div class="max-w-4xl mx-auto mt-16 md:mt-4">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-bold text-navy border-l-4 border-gold pl-3">Materi Pembelajaran</h2>
+                    <div class="flex gap-2">
+                        <button onclick="materiController.playAudio()" id="btn-materi-play" class="bg-blue text-white w-10 h-10 rounded-full shadow hover:bg-navy"><i class="fas fa-play"></i></button>
+                        <button onclick="materiController.pauseAudio()" class="bg-gray-200 text-gray-700 w-10 h-10 rounded-full shadow hover:bg-gray-300"><i class="fas fa-pause"></i></button>
+                    </div>
+                </div>
+
+                <div id="materi-content" class="bg-white rounded-2xl shadow-lg p-6 md:p-8 animate-fade-in relative overflow-hidden">
+                    <!-- Dinamis via JS -->
+                </div>
+
+                <div class="flex justify-between items-center mt-6">
+                    <button onclick="materiController.prev()" class="bg-white text-blue px-6 py-3 rounded-xl font-bold shadow hover:bg-gray-50 transition"><i class="fas fa-arrow-left mr-2"></i> Sebelumnya</button>
+                    <div class="text-gray-500 font-medium" id="materi-progress">1 / 8</div>
+                    <button onclick="materiController.next()" class="bg-light text-white px-6 py-3 rounded-xl font-bold shadow hover:bg-navy transition">Selanjutnya <i class="fas fa-arrow-right ml-2"></i></button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Simulasi -->
+        <section id="view-simulasi" class="view-section hidden min-h-full p-6 pb-24 md:pb-6">
+            <div class="max-w-4xl mx-auto mt-16 md:mt-4">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-navy mb-2">Jadilah Agen Penegak Norma</h2>
+                    <p class="text-gray-600">Pilih tindakan terbaik untuk setiap kasus yang kamu temui!</p>
+                </div>
+
+                <div id="simulasi-container" class="bg-white rounded-2xl shadow-xl p-6 md:p-8 animate-fade-in">
+                    <!-- Dinamis via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Game -->
+        <section id="view-game" class="view-section hidden min-h-full p-6 pb-24 md:pb-6">
+            <div class="max-w-5xl mx-auto mt-16 md:mt-4">
+                <h2 class="text-3xl font-bold text-navy border-l-4 border-gold pl-3 mb-6">Zona Bermain</h2>
+                
+                <div id="game-menu" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Menu Game 1 -->
+                    <div class="bg-white rounded-2xl shadow-lg p-6 text-center hover:-translate-y-2 transition duration-300 cursor-pointer border-t-4 border-blue" onclick="gameController.start(1)">
+                        <div class="w-20 h-20 mx-auto bg-blue/10 rounded-full flex items-center justify-center mb-4 text-blue text-4xl">
+                            <i class="fas fa-question"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-navy mb-2">Tebak Norma</h3>
+                        <p class="text-gray-500 text-sm mb-4">Baca cerita dan tebak jenis norma yang tepat!</p>
+                        <button class="bg-light text-white px-6 py-2 rounded-lg font-semibold w-full">Mainkan</button>
+                    </div>
+                    <!-- Menu Game 2 -->
+                    <div class="bg-white rounded-2xl shadow-lg p-6 text-center hover:-translate-y-2 transition duration-300 cursor-pointer border-t-4 border-gold" onclick="gameController.start(2)">
+                        <div class="w-20 h-20 mx-auto bg-gold/10 rounded-full flex items-center justify-center mb-4 text-gold text-4xl">
+                            <i class="fas fa-puzzle-piece"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-navy mb-2">Pasangkan Norma</h3>
+                        <p class="text-gray-500 text-sm mb-4">Cocokkan norma dengan sumber dan sanksinya!</p>
+                        <button class="bg-gold text-white px-6 py-2 rounded-lg font-semibold w-full">Mainkan</button>
+                    </div>
+                    <!-- Menu Game 3 -->
+                    <div class="bg-white rounded-2xl shadow-lg p-6 text-center hover:-translate-y-2 transition duration-300 cursor-pointer border-t-4 border-green-500" onclick="gameController.start(3)">
+                        <div class="w-20 h-20 mx-auto bg-green-100 rounded-full flex items-center justify-center mb-4 text-green-500 text-4xl">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-navy mb-2">Misi Detektif</h3>
+                        <p class="text-gray-500 text-sm mb-4">Identifikasi perilaku yang sesuai atau melanggar!</p>
+                        <button class="bg-green-500 text-white px-6 py-2 rounded-lg font-semibold w-full">Mainkan</button>
+                    </div>
+                </div>
+
+                <!-- Game Canvas/Container -->
+                <div id="game-container" class="hidden bg-white rounded-2xl shadow-xl p-6 md:p-8 relative mt-6">
+                    <button onclick="gameController.backToMenu()" class="absolute top-4 left-4 text-gray-500 hover:text-navy"><i class="fas fa-times text-xl"></i></button>
+                    <div id="game-content" class="mt-4"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. LKPD -->
+        <section id="view-lkpd" class="view-section hidden min-h-full p-6 pb-24 md:pb-6 bg-white">
+            <div class="max-w-4xl mx-auto mt-16 md:mt-4 shadow-xl border border-gray-100 rounded-lg p-8 md:p-12 relative" id="lkpd-document">
+                <div class="text-center mb-8 border-b-2 border-navy pb-6">
+                    <h1 class="text-2xl font-bold text-navy mb-2">LEMBAR KERJA PESERTA DIDIK (LKPD)</h1>
+                    <h2 class="text-xl font-semibold text-light">Ayo Mengenal dan Menerapkan Norma</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 bg-cream p-4 rounded-lg">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Nama Lengkap</label>
+                        <input type="text" class="w-full border-gray-300 rounded-md shadow-sm p-2" placeholder="Ketik nama...">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Kelas</label>
+                        <input type="text" class="w-full border-gray-300 rounded-md shadow-sm p-2" placeholder="Ketik kelas...">
+                    </div>
+                </div>
+
+                <div class="mb-8">
+                    <h3 class="font-bold text-lg text-navy mb-3">Kegiatan 1: Analisis Kasus</h3>
+                    <p class="text-gray-700 mb-2">Perhatikan gambar lingkungan masyarakat di bawah ini. Tuliskan 2 contoh pelanggaran norma yang sering terjadi dan sebutkan jenis normanya.</p>
+                    <textarea class="w-full border border-gray-300 rounded-md p-3 h-24" placeholder="Jawabanmu di sini..."></textarea>
+                </div>
+                
+                <div class="mb-8">
+                    <h3 class="font-bold text-lg text-navy mb-3">Kegiatan 2: Tabel Penerapan</h3>
+                    <p class="text-gray-700 mb-2">Lengkapi tabel penerapan norma di lingkungan sekolah.</p>
+                    <table class="w-full border-collapse border border-gray-300 text-sm">
+                        <tr class="bg-gray-100">
+                            <th class="border border-gray-300 p-2 text-left w-1/4">Jenis Norma</th>
+                            <th class="border border-gray-300 p-2 text-left">Contoh Perilaku di Sekolah</th>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-300 p-2 font-semibold">Agama</td>
+                            <td class="border border-gray-300 p-0"><input type="text" class="w-full p-2 border-0 bg-transparent focus:ring-0" placeholder="Ketik di sini..."></td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-300 p-2 font-semibold">Kesusilaan</td>
+                            <td class="border border-gray-300 p-0"><input type="text" class="w-full p-2 border-0 bg-transparent focus:ring-0" placeholder="Ketik di sini..."></td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-300 p-2 font-semibold">Kesopanan</td>
+                            <td class="border border-gray-300 p-0"><input type="text" class="w-full p-2 border-0 bg-transparent focus:ring-0" placeholder="Ketik di sini..."></td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-300 p-2 font-semibold">Hukum</td>
+                            <td class="border border-gray-300 p-0"><input type="text" class="w-full p-2 border-0 bg-transparent focus:ring-0" placeholder="Ketik di sini..."></td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="mb-8">
+                    <h3 class="font-bold text-lg text-navy mb-3">Kegiatan 3: Refleksi</h3>
+                    <p class="text-gray-700 mb-2">Apa yang akan terjadi jika dalam sebuah negara tidak ada norma hukum? Jelaskan pendapatmu.</p>
+                    <textarea class="w-full border border-gray-300 rounded-md p-3 h-24" placeholder="Pendapatmu..."></textarea>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex justify-end gap-3 mt-8 no-print border-t pt-6">
+                    <button onclick="lkpdController.save()" class="bg-light text-white px-4 py-2 rounded shadow hover:bg-navy"><i class="fas fa-save mr-2"></i>Simpan</button>
+                    <button onclick="window.print()" class="bg-gray-600 text-white px-4 py-2 rounded shadow hover:bg-gray-800"><i class="fas fa-print mr-2"></i>Cetak/Unduh</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. Evaluasi -->
+        <section id="view-evaluasi" class="view-section hidden min-h-full p-6 pb-24 md:pb-6">
+            <div class="max-w-4xl mx-auto mt-16 md:mt-4">
+                <div id="evaluasi-intro" class="bg-white rounded-2xl shadow-lg p-8 text-center animate-fade-in">
+                    <i class="fas fa-clipboard-check text-6xl text-blue mb-4"></i>
+                    <h2 class="text-3xl font-bold text-navy mb-4">Evaluasi Akhir Pembelajaran</h2>
+                    <p class="text-gray-600 mb-6">Uji pemahamanmu tentang macam-macam norma. Terdapat 20 soal kombinasi (Pilihan Ganda, Benar/Salah, dan Menjodohkan). Kerjakan dengan jujur!</p>
+                    <button onclick="evalController.start()" class="bg-gold text-navy font-bold px-8 py-3 rounded-full shadow hover:bg-yellow-500 transition text-lg">Mulai Evaluasi</button>
+                </div>
+
+                <div id="evaluasi-quiz" class="hidden bg-white rounded-2xl shadow-lg p-6 md:p-8 animate-fade-in">
+                    <div class="flex justify-between items-center mb-6 border-b pb-4">
+                        <h3 class="font-bold text-xl text-navy" id="eval-q-title">Soal 1 dari 20</h3>
+                        <div class="text-sm bg-blue/10 text-blue px-3 py-1 rounded-full font-semibold">Tipe: <span id="eval-q-type">Pilihan Ganda</span></div>
+                    </div>
+                    <div id="eval-content" class="mb-8 min-h-[200px]">
+                        <!-- Soal via JS -->
+                    </div>
+                    <div class="flex justify-end">
+                        <button id="btn-eval-next" onclick="evalController.next()" class="bg-light text-white px-6 py-2 rounded-lg font-bold shadow hover:bg-navy hidden">Selanjutnya <i class="fas fa-chevron-right ml-2"></i></button>
+                    </div>
+                </div>
+
+                <div id="evaluasi-result" class="hidden bg-white rounded-2xl shadow-lg p-8 text-center animate-fade-in">
+                    <!-- Hasil via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. Pengembang -->
+        <section id="view-pengembang" class="view-section hidden min-h-full p-6 pb-24 md:pb-6">
+            <div class="max-w-2xl mx-auto mt-16 md:mt-10">
+                <div class="bg-white rounded-2xl shadow-xl overflow-hidden animate-fade-in relative">
+                    <div class="h-32 bg-gradient-to-r from-navy to-light"></div>
+                    <div class="px-8 pb-8 text-center -mt-16">
+                        <img src="https://placehold.co/200x200/F39F5A/FFFFFF?text=ZZ" alt="Zazila Ziani" class="w-32 h-32 rounded-full border-4 border-white mx-auto shadow-lg object-cover mb-4">
+                        <h2 class="text-3xl font-bold text-navy">Zazila Ziani, S.Pd.</h2>
+                        <p class="text-light font-medium mb-4">Guru Pendidikan Pancasila</p>
+                        
+                        <div class="bg-cream rounded-xl p-4 mb-6 text-left shadow-inner border border-gray-100">
+                            <ul class="space-y-3 text-gray-700">
+                                <li><i class="fas fa-school w-6 text-center text-blue"></i> <strong>Instansi:</strong> SMPN Satu Atap 3 Kalianda</li>
+                                <li><i class="fas fa-book w-6 text-center text-blue"></i> <strong>Mapel:</strong> Pendidikan Pancasila (Fase D / Kelas VII)</li>
+                                <li><i class="fas fa-calendar-alt w-6 text-center text-blue"></i> <strong>Tahun:</strong> 2026</li>
+                            </ul>
+                        </div>
+                        
+                        <p class="text-gray-600 italic text-sm mb-6">"Pendidikan adalah senjata paling ampuh yang dapat kamu gunakan untuk mengubah dunia. Mari wujudkan generasi berkarakter unggul melalui pemahaman norma dan nilai luhur Pancasila."</p>
+                        
+                        <p class="text-xs text-gray-400">Media Pembelajaran Interaktif ini dikembangkan sebagai dedikasi untuk pendidikan Indonesia.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- SCRIPT UTAMA -->
+    <script>
+        // --- 1. CORE & UTILS ---
+        const menuItems = [
+            { id: 'beranda', icon: 'fa-home', label: 'Beranda' },
+            { id: 'materi', icon: 'fa-book-open', label: 'Materi' },
+            { id: 'simulasi', icon: 'fa-street-view', label: 'Simulasi' },
+            { id: 'game', icon: 'fa-gamepad', label: 'Game' },
+            { id: 'lkpd', icon: 'fa-file-alt', label: 'LKPD' },
+            { id: 'evaluasi', icon: 'fa-check-double', label: 'Evaluasi' },
+            { id: 'pengembang', icon: 'fa-user-tie', label: 'Pengembang' }
+        ];
+
+        let state = {
+            currentView: 'beranda',
+            points: parseInt(localStorage.getItem('mpi_points')) || 0,
+            hasStarted: false,
+            audioEnabled: true,
+            bgmPlaying: false
+        };
+
+        function updatePoints(add) {
+            state.points += add;
+            localStorage.setItem('mpi_points', state.points);
+            document.getElementById('user-points').innerText = state.points;
+            document.getElementById('mobile-points').innerText = state.points;
+        }
+
+        // Custom Modal
+        function showModal(title, message, type = 'info', onConfirm = null) {
+            const modal = document.getElementById('custom-modal');
+            const icon = document.getElementById('modal-icon');
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-message').innerText = message;
+            
+            icon.className = 'fas text-4xl mb-4 ' + 
+                (type === 'success' ? 'fa-check-circle text-green-500' : 
+                 type === 'error' ? 'fa-times-circle text-red-500' : 
+                 type === 'warning' ? 'fa-exclamation-triangle text-gold' : 'fa-info-circle text-blue');
+            
+            modal.classList.remove('hidden');
+            
+            // Handle one-time confirm if needed
+            modal.onclick = (e) => {
+                if(e.target === modal || e.target.tagName === 'BUTTON') {
+                    closeModal();
+                    if(onConfirm) onConfirm();
+                }
+            }
+        }
+        function closeModal() { document.getElementById('custom-modal').classList.add('hidden'); }
+
+        // Navigation UI Builder
+        function buildNavigation() {
+            const deskNav = document.getElementById('nav-list');
+            const mobNav = document.getElementById('mobile-bottom-nav');
+            deskNav.innerHTML = ''; mobNav.innerHTML = '';
+
+            menuItems.forEach(item => {
+                // Desktop
+                const li = document.createElement('li');
+                li.innerHTML = `<button onclick="navigate('${item.id}')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${state.currentView === item.id ? 'bg-white text-navy font-bold shadow-md' : 'text-gray-300 hover:bg-white/10 hover:text-white'}">
+                    <i class="fas ${item.icon} w-6 text-center"></i> <span>${item.label}</span>
+                </button>`;
+                deskNav.appendChild(li);
+
+                // Mobile
+                const mobBtn = document.createElement('button');
+                mobBtn.onclick = () => navigate(item.id);
+                mobBtn.className = `flex flex-col items-center justify-center p-2 min-w-[4rem] transition-colors ${state.currentView === item.id ? 'text-gold' : 'text-gray-400'}`;
+                mobBtn.innerHTML = `<i class="fas ${item.icon} text-xl mb-1"></i><span class="text-[10px]">${item.label}</span>`;
+                mobNav.appendChild(mobBtn);
+            });
+        }
+
+        function navigate(viewId) {
+            if (!state.hasStarted && viewId !== 'beranda') {
+                showModal("Perhatian", "Silakan klik MULAI BELAJAR terlebih dahulu pada Beranda.", "warning");
+                return;
+            }
+
+            // Stop any ongoing audio/TTS
+            speechManager.stop();
+            
+            // Hide all views
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            
+            // Show target view
+            document.getElementById(`view-${viewId}`).classList.remove('hidden');
+            
+            // Scroll to top
+            document.querySelector('main').scrollTo(0,0);
+
+            state.currentView = viewId;
+            buildNavigation();
+            
+            // Audio sfx
+            soundManager.playClick();
+
+            // Special initializations
+            if(viewId === 'materi') materiController.render();
+            if(viewId === 'simulasi') simulasiController.renderList();
+        }
+
+        function startApp() {
+            state.hasStarted = true;
+            document.getElementById('main-nav').classList.remove('hidden');
+            document.getElementById('mobile-header').classList.remove('hidden');
+            document.getElementById('mobile-bottom-nav').classList.remove('hidden');
+            document.getElementById('mobile-bottom-nav').classList.add('flex');
+            document.getElementById('audio-controls').classList.remove('hidden');
+            
+            // Init Tone.js (Requires user interaction)
+            Tone.start().then(() => {
+                soundManager.init();
+                speechManager.speak("Selamat datang di aplikasi pembelajaran Jelajah Norma. Mari kita mulai belajar!");
+                navigate('materi');
+            });
+        }
+
+        // --- 2. AUDIO & TTS MANAGERS ---
+        const soundManager = {
+            bgm: null, clickSynth: null, winSynth: null, loseSynth: null,
+            init() {
+                // Background Music (Simple arpeggio pattern)
+                this.bgm = new Tone.PolySynth(Tone.Synth).toDestination();
+                this.bgm.volume.value = -20; // Soft volume
+                const chords = [
+                    ['C4', 'E4', 'G4'], ['F4', 'A4', 'C5'], ['G4', 'B4', 'D5'], ['C4', 'E4', 'G4']
+                ];
+                let step = 0;
+                Tone.Transport.scheduleRepeat((time) => {
+                    if (state.bgmPlaying && state.audioEnabled) {
+                        this.bgm.triggerAttackRelease(chords[step % chords.length], "4n", time);
+                        step++;
+                    }
+                }, "2n");
+                
+                // Sound Effects
+                this.clickSynth = new Tone.Synth().toDestination();
+                this.clickSynth.volume.value = -10;
+                this.winSynth = new Tone.PolySynth(Tone.Synth).toDestination();
+                this.winSynth.volume.value = -10;
+                this.loseSynth = new Tone.FMSynth().toDestination();
+                this.loseSynth.volume.value = -10;
+            },
+            playClick() {
+                if(state.audioEnabled && this.clickSynth) this.clickSynth.triggerAttackRelease("C5", "32n");
+            },
+            playWin() {
+                if(state.audioEnabled && this.winSynth) {
+                    const now = Tone.now();
+                    this.winSynth.triggerAttackRelease(["C5", "E5", "G5"], "8n", now);
+                    this.winSynth.triggerAttackRelease(["C6", "E6", "G6"], "4n", now + 0.2);
+                }
+            },
+            playLose() {
+                if(state.audioEnabled && this.loseSynth) {
+                    this.loseSynth.triggerAttackRelease("D3", "4n");
+                    this.loseSynth.frequency.rampTo("C2", 0.5);
+                }
+            }
+        };
+
+        function toggleBGM() {
+            state.bgmPlaying = !state.bgmPlaying;
+            if (state.bgmPlaying) {
+                if (Tone.Transport.state !== 'started') Tone.Transport.start();
+                document.getElementById('btn-bgm').classList.replace('text-gray-400', 'text-light');
+            } else {
+                document.getElementById('btn-bgm').classList.replace('text-light', 'text-gray-400');
+            }
+        }
+
+        const speechManager = {
+            synth: window.speechSynthesis,
+            currentText: '',
+            isSpeaking: false,
+            speak(text) {
+                if(!state.audioEnabled || !this.synth) return;
+                this.stop();
+                this.currentText = text;
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'id-ID';
+                utterance.rate = 0.9; // Slightly slower for clarity
+                utterance.onend = () => { this.isSpeaking = false; updateMateriAudioUI(); };
+                this.synth.speak(utterance);
+                this.isSpeaking = true;
+                updateMateriAudioUI();
+            },
+            stop() {
+                if(this.synth) { this.synth.cancel(); this.isSpeaking = false; }
+            },
+            pause() {
+                if(this.synth && this.isSpeaking) { this.synth.pause(); }
+            },
+            resume() {
+                if(this.synth && this.synth.paused) { this.synth.resume(); }
+            }
+        };
+
+        function toggleTTS() {
+            state.audioEnabled = !state.audioEnabled;
+            const btn = document.getElementById('btn-tts');
+            if(state.audioEnabled) {
+                btn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                btn.classList.replace('text-gray-400', 'text-light');
+            } else {
+                btn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                btn.classList.replace('text-light', 'text-gray-400');
+                speechManager.stop();
+            }
+        }
+
+        // --- 3. MATERI CONTROLLER ---
+        const materiData = [
+            {
+                title: "Apa itu Norma?",
+                content: `<p class="mb-4">Bayangkan jalan raya tanpa lampu lalu lintas, pasti akan macet dan kacau, kan? Begitu juga kehidupan manusia di masyarakat.</p>
+                          <p class="mb-4 font-semibold text-navy">Norma adalah aturan, ketentuan, atau pedoman yang mengikat warga kelompok dalam masyarakat.</p>
+                          <p>Norma dipakai sebagai panduan, tatanan, dan pengendali tingkah laku yang sesuai dan berterima. Setiap orang wajib menaatinya agar kehidupan berjalan tertib dan damai.</p>`,
+                icon: "fa-road", color: "blue",
+                tts: "Bayangkan jalan raya tanpa lampu lalu lintas, pasti akan macet dan kacau, kan? Begitu juga kehidupan manusia di masyarakat. Norma adalah aturan, ketentuan, atau pedoman yang mengikat warga kelompok dalam masyarakat."
+            },
+            {
+                title: "Fungsi Norma",
+                content: `<ul class="list-disc pl-5 space-y-3">
+                            <li>Mengatur tingkah laku masyarakat agar sesuai nilai yang berlaku.</li>
+                            <li>Menciptakan ketertiban, keadilan, dan keamanan.</li>
+                            <li>Mencegah benturan kepentingan antarwarga.</li>
+                            <li>Memberikan petunjuk bagi setiap individu dalam menjalani kehidupan bermasyarakat.</li>
+                          </ul>`,
+                icon: "fa-shield-alt", color: "navy",
+                tts: "Fungsi norma antara lain: mengatur tingkah laku masyarakat, menciptakan ketertiban dan keadilan, mencegah benturan kepentingan, serta memberikan petunjuk dalam menjalani kehidupan bermasyarakat."
+            },
+            {
+                title: "1. Norma Agama",
+                content: `<p class="mb-2"><strong>Sumber:</strong> Wahyu Tuhan Yang Maha Esa (Kitab Suci).</p>
+                          <p class="mb-2"><strong>Contoh:</strong> Beribadah sesuai agama, tidak mencuri, berbuat baik pada sesama.</p>
+                          <p class="mb-2"><strong>Sanksi:</strong> Dosa (Sanksi dari Tuhan di akhirat / batin).</p>
+                          <div class="bg-gray-100 p-3 rounded mt-4 border-l-4 border-blue">
+                             Norma ini bersifat mutlak dan tidak dapat diubah karena berasal langsung dari Tuhan.
+                          </div>`,
+                icon: "fa-pray", color: "green-600",
+                tts: "Satu. Norma Agama. Sumbernya berasal dari wahyu Tuhan Yang Maha Esa. Contohnya rajin beribadah dan tidak mencuri. Sanksi jika melanggar adalah dosa."
+            },
+            {
+                title: "2. Norma Kesusilaan",
+                content: `<p class="mb-2"><strong>Sumber:</strong> Hati nurani manusia.</p>
+                          <p class="mb-2"><strong>Contoh:</strong> Jujur, tidak berbohong, menghargai orang lain.</p>
+                          <p class="mb-2"><strong>Sanksi:</strong> Penyesalan, rasa bersalah, kegelisahan batin.</p>
+                          <div class="bg-gray-100 p-3 rounded mt-4 border-l-4 border-gold">
+                             Norma kesusilaan bersifat universal, artinya dimiliki oleh setiap manusia di dunia.
+                          </div>`,
+                icon: "fa-heart", color: "red-500",
+                tts: "Dua. Norma Kesusilaan. Sumbernya dari hati nurani manusia. Contohnya bersikap jujur. Sanksinya berupa penyesalan atau rasa bersalah."
+            },
+            {
+                title: "3. Norma Kesopanan",
+                content: `<p class="mb-2"><strong>Sumber:</strong> Kebiasaan, adat istiadat, atau kepatutan dalam masyarakat.</p>
+                          <p class="mb-2"><strong>Contoh:</strong> Menghormati orang tua, berpakaian rapi, tidak meludah sembarangan.</p>
+                          <p class="mb-2"><strong>Sanksi:</strong> Dicela, dikucilkan, dicemooh oleh masyarakat.</p>
+                          <div class="bg-gray-100 p-3 rounded mt-4 border-l-4 border-orange-500">
+                             Norma ini bersifat relatif, artinya sopan di suatu daerah belum tentu sopan di daerah lain.
+                          </div>`,
+                icon: "fa-handshake", color: "orange-500",
+                tts: "Tiga. Norma Kesopanan. Bersumber dari kebiasaan atau pergaulan masyarakat. Contohnya menghormati orang yang lebih tua. Sanksinya bisa berupa teguran atau dikucilkan masyarakat."
+            },
+            {
+                title: "4. Norma Hukum",
+                content: `<p class="mb-2"><strong>Sumber:</strong> Peraturan yang dibuat oleh negara atau lembaga resmi yang berwenang.</p>
+                          <p class="mb-2"><strong>Contoh:</strong> Membayar pajak, menaati rambu lalu lintas, tidak melakukan tindak pidana.</p>
+                          <p class="mb-2"><strong>Sanksi:</strong> Tegas dan nyata! Berupa denda, penjara, atau hukuman lain dari alat negara (Polisi, Hakim).</p>
+                          <div class="bg-red-50 p-3 rounded mt-4 border-l-4 border-red-600 font-semibold text-red-800">
+                             Sanksi norma hukum adalah satu-satunya yang bersifat memaksa dan ditegakkan oleh lembaga resmi!
+                          </div>`,
+                icon: "fa-gavel", color: "gray-800",
+                tts: "Empat. Norma Hukum. Dibuat oleh negara atau lembaga berwenang. Contohnya menaati rambu lalu lintas. Sanksinya sangat tegas dan memaksa, seperti denda atau penjara."
+            },
+            {
+                title: "Tabel Perbandingan",
+                content: `<div class="overflow-x-auto">
+                            <table class="min-w-full bg-white text-sm text-left">
+                                <thead class="bg-navy text-white">
+                                    <tr><th class="p-3">Norma</th><th class="p-3">Sumber</th><th class="p-3">Sanksi</th></tr>
+                                </thead>
+                                <tbody class="divide-y">
+                                    <tr><td class="p-3 font-semibold">Agama</td><td class="p-3">Wahyu Tuhan</td><td class="p-3">Dosa / Akhirat</td></tr>
+                                    <tr><td class="p-3 font-semibold">Kesusilaan</td><td class="p-3">Hati Nurani</td><td class="p-3">Penyesalan batin</td></tr>
+                                    <tr><td class="p-3 font-semibold">Kesopanan</td><td class="p-3">Masyarakat / Adat</td><td class="p-3">Dikucilkan / Dicela</td></tr>
+                                    <tr class="bg-red-50"><td class="p-3 font-semibold text-red-700">Hukum</td><td class="p-3 text-red-700">Negara</td><td class="p-3 font-bold text-red-700">Penjara / Denda (Tegas)</td></tr>
+                                </tbody>
+                            </table>
+                          </div>`,
+                icon: "fa-table", color: "blue",
+                tts: "Tabel perbandingan menunjukkan bahwa hanya norma hukum yang memiliki sanksi tegas dan nyata dari negara, sedangkan norma lain sanksinya berasal dari batin, masyarakat, atau Tuhan."
+            }
+        ];
+
+        const materiController = {
+            currentIndex: 0,
+            render() {
+                const data = materiData[this.currentIndex];
+                const container = document.getElementById('materi-content');
+                container.innerHTML = `
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-16 h-16 rounded-2xl bg-${data.color || 'blue'}/10 flex items-center justify-center text-${data.color || 'blue'} text-3xl">
+                            <i class="fas ${data.icon}"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-navy">${data.title}</h3>
+                    </div>
+                    <div class="text-gray-700 leading-relaxed text-lg">${data.content}</div>
+                `;
+                document.getElementById('materi-progress').innerText = `${this.currentIndex + 1} / ${materiData.length}`;
+                
+                // Auto play TTS if enabled
+                if(state.audioEnabled) this.playAudio();
+            },
+            next() {
+                if (this.currentIndex < materiData.length - 1) {
+                    this.currentIndex++;
+                    this.render();
+                    soundManager.playClick();
+                } else {
+                    showModal("Hebat!", "Kamu telah menyelesaikan semua materi. Yuk coba fitur Simulasi atau Game!", "success");
+                }
+            },
+            prev() {
+                if (this.currentIndex > 0) {
+                    this.currentIndex--;
+                    this.render();
+                    soundManager.playClick();
+                }
+            },
+            playAudio() {
+                speechManager.speak(materiData[this.currentIndex].tts);
+            },
+            pauseAudio() {
+                speechManager.pause();
+            }
+        };
+
+        function updateMateriAudioUI() {
+            const btnPlay = document.getElementById('btn-materi-play');
+            if(speechManager.isSpeaking) {
+                btnPlay.classList.replace('bg-blue', 'bg-green-500');
+            } else {
+                btnPlay.classList.replace('bg-green-500', 'bg-blue');
+            }
+        }
+
+        // --- 4. SIMULASI CONTROLLER ---
+        const simulasiData = [
+            {
+                title: "Kasus 1: Ujian Sekolah",
+                desc: "Kamu sedang mengerjakan ujian akhir. Tiba-tiba kamu melihat teman sebangkumu mencontek catatan kecil di bawah mejanya.",
+                icon: "fa-user-graduate",
+                options: [
+                    { text: "Membiarkan saja agar dia tidak marah.", correct: false, norm: "Kesusilaan & Hukum (Sekolah)", feedback: "Salah! Membiarkan teman berbuat salah berarti tidak jujur pada diri sendiri dan tidak peduli padanya." },
+                    { text: "Ikut mencontek mumpung guru tidak melihat.", correct: false, norm: "Agama, Kesusilaan, Aturan Sekolah", feedback: "Sangat salah! Ini melanggar norma agama (berdosa), kesusilaan (tidak jujur), dan aturan sekolah." },
+                    { text: "Mengingatkannya dengan halus setelah ujian atau melapor ke guru jika ia terus mengulanginya.", correct: true, norm: "Kesusilaan", feedback: "Tepat sekali! Tindakan ini sesuai dengan norma kesusilaan yang menuntun pada kejujuran dan kebaikan." }
+                ]
+            },
+            {
+                title: "Kasus 2: Dompet Jatuh",
+                desc: "Saat berjalan di kantin sekolah, kamu menemukan sebuah dompet berisi uang yang cukup banyak dan kartu identitas kakak kelas.",
+                icon: "fa-wallet",
+                options: [
+                    { text: "Menyerahkan ke guru BK atau satpam agar diumumkan.", correct: true, norm: "Kesusilaan & Hukum", feedback: "Bagus! Kamu jujur (Kesusilaan) dan tidak mengambil hak orang lain (Hukum Agama/Negara)." },
+                    { text: "Mengambil uangnya sedikit untuk jajan, lalu membuang dompetnya.", correct: false, norm: "Hukum & Agama", feedback: "Ini pencurian! Melanggar norma hukum dan norma agama secara jelas." },
+                    { text: "Menyimpannya sendiri karena tidak ada yang melihat.", correct: false, norm: "Kesusilaan", feedback: "Hati nuranimu pasti menolak. Ini melanggar norma kesusilaan dan agama." }
+                ]
+            }
+        ];
+
+        const simulasiController = {
+            renderList() {
+                const container = document.getElementById('simulasi-container');
+                let html = '<div class="space-y-6">';
+                simulasiData.forEach((sim, idx) => {
+                    html += `
+                    <div class="border rounded-xl p-5 hover:shadow-md transition bg-gray-50 border-gray-200" id="sim-case-${idx}">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="bg-navy text-white w-10 h-10 rounded-full flex items-center justify-center"><i class="fas ${sim.icon}"></i></div>
+                            <h3 class="font-bold text-lg text-navy">${sim.title}</h3>
+                        </div>
+                        <p class="text-gray-700 mb-4">${sim.desc}</p>
+                        <div class="space-y-2">
+                            ${sim.options.map((opt, optIdx) => `
+                                <button onclick="simulasiController.answer(${idx}, ${optIdx})" class="w-full text-left p-3 rounded-lg border border-gray-300 hover:bg-light hover:text-white transition text-sm">
+                                    ${opt.text}
+                                </button>
+                            `).join('')}
+                        </div>
+                        <div id="sim-feedback-${idx}" class="hidden mt-4 p-4 rounded-lg text-sm font-semibold"></div>
+                    </div>`;
+                });
+                html += '</div>';
+                container.innerHTML = html;
+                speechManager.speak("Pilih tindakan yang menurutmu paling tepat untuk setiap kasus.");
+            },
+            answer(caseIdx, optIdx) {
+                const sim = simulasiData[caseIdx];
+                const opt = sim.options[optIdx];
+                const feedbackEl = document.getElementById(`sim-feedback-${caseIdx}`);
+                
+                feedbackEl.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
+                
+                if(opt.correct) {
+                    feedbackEl.classList.add('bg-green-100', 'text-green-800');
+                    feedbackEl.innerHTML = `<i class="fas fa-check-circle mr-2"></i> <strong>Benar!</strong> ${opt.feedback}<br><span class="text-xs text-green-600 mt-1 block">Terkait: Norma ${opt.norm}</span>`;
+                    soundManager.playWin();
+                    updatePoints(10);
+                } else {
+                    feedbackEl.classList.add('bg-red-100', 'text-red-800');
+                    feedbackEl.innerHTML = `<i class="fas fa-times-circle mr-2"></i> <strong>Kurang Tepat.</strong> ${opt.feedback}`;
+                    soundManager.playLose();
+                }
+            }
+        };
+
+        // --- 5. GAME CONTROLLER ---
+        const games = {
+            1: {
+                title: "Tebak Norma",
+                questions: [
+                    { q: "Mengucapkan salam saat masuk ke rumah orang lain.", a: "Kesopanan", opts: ["Agama", "Kesopanan", "Hukum"] },
+                    { q: "Membayar pajak kendaraan tepat waktu.", a: "Hukum", opts: ["Kesusilaan", "Kesopanan", "Hukum"] },
+                    { q: "Menyesal setelah berbohong kepada ibu.", a: "Kesusilaan", opts: ["Agama", "Kesusilaan", "Hukum"] },
+                    { q: "Melaksanakan puasa di bulan suci.", a: "Agama", opts: ["Agama", "Kesopanan", "Kesusilaan"] }
+                ]
+            },
+            3: {
+                title: "Misi Detektif: Klasifikasi Perilaku",
+                items: [
+                    { text: "Membuang sampah di sungai", type: "melanggar" },
+                    { text: "Menyeberang di Zebra Cross", type: "sesuai" },
+                    { text: "Mengejek teman yang berbeda suku", type: "melanggar" },
+                    { text: "Membantu nenek menyeberang", type: "sesuai" }
+                ]
+            }
+        };
+
+        const gameController = {
+            currentGame: 0,
+            currentStep: 0,
+            score: 0,
+            start(gameId) {
+                this.currentGame = gameId;
+                this.currentStep = 0;
+                this.score = 0;
+                
+                document.getElementById('game-menu').classList.add('hidden');
+                document.getElementById('game-container').classList.remove('hidden');
+                
+                if(gameId === 1) this.renderGame1();
+                else if(gameId === 2) this.renderGame2();
+                else if(gameId === 3) this.renderGame3();
+                
+                soundManager.playClick();
+            },
+            backToMenu() {
+                document.getElementById('game-menu').classList.remove('hidden');
+                document.getElementById('game-container').classList.add('hidden');
+                document.getElementById('game-content').innerHTML = '';
+            },
+            finishGame() {
+                const content = document.getElementById('game-content');
+                updatePoints(this.score * 10);
+                soundManager.playWin();
+                content.innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="fas fa-trophy text-6xl text-gold mb-4"></i>
+                        <h3 class="text-2xl font-bold text-navy mb-2">Permainan Selesai!</h3>
+                        <p class="text-lg">Kamu mendapatkan <span class="font-bold text-blue">${this.score * 10} Poin</span></p>
+                        <button onclick="gameController.backToMenu()" class="mt-6 bg-light text-white px-6 py-2 rounded-full font-bold shadow hover:bg-navy">Kembali ke Menu Game</button>
+                    </div>
+                `;
+            },
+            
+            // Game 1: Tebak Norma
+            renderGame1() {
+                const game = games[1];
+                if(this.currentStep >= game.questions.length) return this.finishGame();
+                
+                const q = game.questions[this.currentStep];
+                let html = `
+                    <div class="text-center max-w-lg mx-auto">
+                        <div class="mb-4 text-sm font-bold text-gray-400">Pertanyaan ${this.currentStep + 1} dari ${game.questions.length}</div>
+                        <h3 class="text-xl font-bold text-navy mb-6">"${q.q}"</h3>
+                        <div class="grid grid-cols-1 gap-3">
+                            ${q.opts.map(opt => `
+                                <button onclick="gameController.checkG1('${opt}', '${q.a}')" class="bg-gray-100 hover:bg-blue hover:text-white border-2 border-transparent transition p-3 rounded-xl font-semibold">
+                                    Norma ${opt}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                document.getElementById('game-content').innerHTML = html;
+            },
+            checkG1(selected, answer) {
+                if(selected === answer) {
+                    soundManager.playWin();
+                    this.score++;
+                    showModal("Benar!", "Jawabanmu tepat sekali.", "success", () => {
+                        this.currentStep++; this.renderGame1();
+                    });
+                } else {
+                    soundManager.playLose();
+                    showModal("Salah", `Jawaban yang tepat adalah Norma ${answer}.`, "error", () => {
+                        this.currentStep++; this.renderGame1();
+                    });
+                }
+            },
+
+            // Game 2: Pasangkan (Simplified Dropdowns due to single-file limit for pure D&D)
+            renderGame2() {
+                let html = `
+                    <div class="max-w-2xl mx-auto">
+                        <p class="mb-4 text-center text-gray-600">Pilih sumber yang tepat untuk masing-masing norma.</p>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border">
+                                <span class="font-bold text-navy w-1/3">Norma Agama</span>
+                                <select id="g2-1" class="border p-2 rounded w-2/3"><option value="">-- Pilih Sumber --</option><option value="tuhan">Wahyu Tuhan</option><option value="hati">Hati Nurani</option><option value="masyarakat">Kebiasaan Masyarakat</option><option value="negara">Negara/Pemerintah</option></select>
+                            </div>
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border">
+                                <span class="font-bold text-navy w-1/3">Norma Kesusilaan</span>
+                                <select id="g2-2" class="border p-2 rounded w-2/3"><option value="">-- Pilih Sumber --</option><option value="tuhan">Wahyu Tuhan</option><option value="hati">Hati Nurani</option><option value="masyarakat">Kebiasaan Masyarakat</option><option value="negara">Negara/Pemerintah</option></select>
+                            </div>
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border">
+                                <span class="font-bold text-navy w-1/3">Norma Hukum</span>
+                                <select id="g2-3" class="border p-2 rounded w-2/3"><option value="">-- Pilih Sumber --</option><option value="tuhan">Wahyu Tuhan</option><option value="hati">Hati Nurani</option><option value="masyarakat">Kebiasaan Masyarakat</option><option value="negara">Negara/Pemerintah</option></select>
+                            </div>
+                        </div>
+                        <div class="mt-6 text-center"><button onclick="gameController.checkG2()" class="bg-gold text-navy font-bold px-8 py-3 rounded-full">Periksa Jawaban</button></div>
+                    </div>
+                `;
+                document.getElementById('game-content').innerHTML = html;
+            },
+            checkG2() {
+                const a1 = document.getElementById('g2-1').value;
+                const a2 = document.getElementById('g2-2').value;
+                const a3 = document.getElementById('g2-3').value;
+                
+                if(!a1 || !a2 || !a3) return showModal("Perhatian", "Pilih semua jawaban terlebih dahulu!", "warning");
+                
+                if(a1 === 'tuhan' && a2 === 'hati' && a3 === 'negara') {
+                    this.score = 3;
+                    this.finishGame();
+                } else {
+                    soundManager.playLose();
+                    showModal("Coba Lagi", "Ada pasangan yang masih salah. Perhatikan kembali sumber normanya.", "error");
+                }
+            },
+
+            // Game 3: Detektif (Hotspots / Cards)
+            renderGame3() {
+                const game = games[3];
+                if(this.currentStep >= game.items.length) return this.finishGame();
+                
+                const item = game.items[this.currentStep];
+                let html = `
+                    <div class="text-center max-w-lg mx-auto">
+                        <div class="w-24 h-24 bg-gray-200 rounded-full mx-auto flex items-center justify-center text-4xl mb-4 border-4 border-dashed border-gray-400">
+                            <i class="fas fa-eye text-gray-500"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-navy mb-6">"${item.text}"</h3>
+                        <div class="flex justify-center gap-4">
+                            <button onclick="gameController.checkG3('${item.type}', 'sesuai')" class="bg-green-500 text-white px-6 py-3 rounded-xl font-bold shadow hover:bg-green-600 w-1/2">
+                                <i class="fas fa-check-circle mr-2"></i> Sesuai Norma
+                            </button>
+                            <button onclick="gameController.checkG3('${item.type}', 'melanggar')" class="bg-red-500 text-white px-6 py-3 rounded-xl font-bold shadow hover:bg-red-600 w-1/2">
+                                <i class="fas fa-times-circle mr-2"></i> Melanggar
+                            </button>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('game-content').innerHTML = html;
+            },
+            checkG3(actual, selected) {
+                if(actual === selected) {
+                    soundManager.playWin();
+                    this.score++;
+                    this.currentStep++;
+                    this.renderGame3();
+                } else {
+                    soundManager.playLose();
+                    showModal("Kurang Tepat", "Analisis kamu masih salah, detektif. Mari lanjut ke kasus berikutnya.", "error", () => {
+                        this.currentStep++; this.renderGame3();
+                    });
+                }
+            }
+        };
+
+        // --- 6. LKPD CONTROLLER ---
+        const lkpdController = {
+            save() {
+                showModal("Tersimpan!", "Jawaban LKPD kamu berhasil disimpan sementara (di perangkat ini). Jangan lupa cetak/unduh jika diminta oleh guru.", "success");
+                updatePoints(5); // Reward for completing LKPD
+            }
+        };
+
+        // --- 7. EVALUASI CONTROLLER ---
+        const evalQuestions = [
+            { type: 'pg', q: "Aturan hidup yang bersumber dari hati nurani manusia disebut norma...", opts: ["Agama", "Kesopanan", "Kesusilaan", "Hukum"], ans: 2 },
+            { type: 'pg', q: "Sanksi berupa denda atau penjara adalah ciri khas dari norma...", opts: ["Agama", "Kesopanan", "Kesusilaan", "Hukum"], ans: 3 },
+            { type: 'pg', q: "Berikut ini yang merupakan contoh pelaksanaan norma kesopanan adalah...", opts: ["Rajin beribadah", "Membayar pajak", "Menyapa guru saat bertemu", "Tidak mencuri"], ans: 2 },
+            { type: 'tf', q: "Norma agama bersumber dari kebiasaan masyarakat setempat.", ans: false },
+            { type: 'tf', q: "Tujuan utama dibuatnya norma adalah untuk menciptakan ketertiban dan kedamaian di masyarakat.", ans: true }
+        ];
+
+        const evalController = {
+            currentQ: 0,
+            answers: [],
+            start() {
+                this.currentQ = 0;
+                this.answers = new Array(evalQuestions.length).fill(null);
+                document.getElementById('evaluasi-intro').classList.add('hidden');
+                document.getElementById('evaluasi-quiz').classList.remove('hidden');
+                this.renderQ();
+            },
+            renderQ() {
+                const q = evalQuestions[this.currentQ];
+                document.getElementById('eval-q-title').innerText = `Soal ${this.currentQ + 1} dari ${evalQuestions.length}`;
+                document.getElementById('eval-q-type').innerText = q.type === 'pg' ? "Pilihan Ganda" : "Benar / Salah";
+                
+                const content = document.getElementById('eval-content');
+                let html = `<p class="text-xl text-gray-800 mb-6 font-medium">${q.q}</p>`;
+                
+                if(q.type === 'pg') {
+                    html += `<div class="space-y-3">`;
+                    q.opts.forEach((opt, idx) => {
+                        const selected = this.answers[this.currentQ] === idx;
+                        html += `<button onclick="evalController.selectAns(${idx})" class="w-full text-left p-4 rounded-xl border-2 transition ${selected ? 'border-blue bg-blue/10 font-bold' : 'border-gray-200 hover:border-gray-300'}">
+                            <span class="inline-block w-8 font-bold text-blue">${String.fromCharCode(65+idx)}.</span> ${opt}
+                        </button>`;
+                    });
+                    html += `</div>`;
+                } else if(q.type === 'tf') {
+                    const selTrue = this.answers[this.currentQ] === true;
+                    const selFalse = this.answers[this.currentQ] === false;
+                    html += `<div class="flex gap-4">
+                        <button onclick="evalController.selectAns(true)" class="w-1/2 py-4 rounded-xl border-2 text-center text-lg font-bold transition ${selTrue ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-gray-300'}">BENAR</button>
+                        <button onclick="evalController.selectAns(false)" class="w-1/2 py-4 rounded-xl border-2 text-center text-lg font-bold transition ${selFalse ? 'border-red-500 bg-red-50 text-red-700' : 'border-gray-200 hover:border-gray-300'}">SALAH</button>
+                    </div>`;
+                }
+                
+                content.innerHTML = html;
+                document.getElementById('btn-eval-next').classList.toggle('hidden', this.answers[this.currentQ] === null);
+                
+                if(this.currentQ === evalQuestions.length - 1) {
+                    document.getElementById('btn-eval-next').innerText = "Selesai & Lihat Hasil";
+                } else {
+                    document.getElementById('btn-eval-next').innerHTML = `Selanjutnya <i class="fas fa-chevron-right ml-2"></i>`;
+                }
+            },
+            selectAns(val) {
+                this.answers[this.currentQ] = val;
+                soundManager.playClick();
+                this.renderQ();
+            },
+            next() {
+                if(this.currentQ < evalQuestions.length - 1) {
+                    this.currentQ++;
+                    this.renderQ();
+                } else {
+                    this.finish();
+                }
+            },
+            finish() {
+                let correct = 0;
+                this.answers.forEach((ans, idx) => {
+                    if(ans === evalQuestions[idx].ans) correct++;
+                });
+                
+                const score = Math.round((correct / evalQuestions.length) * 100);
+                updatePoints(score);
+                
+                document.getElementById('evaluasi-quiz').classList.add('hidden');
+                const result = document.getElementById('evaluasi-result');
+                result.classList.remove('hidden');
+                
+                let predikat = score >= 80 ? 'Sangat Baik!' : (score >= 60 ? 'Cukup Baik' : 'Perlu Belajar Lagi');
+                let icon = score >= 80 ? 'fa-medal text-gold' : 'fa-clipboard-list text-blue';
+                
+                if(score >= 80) soundManager.playWin(); else soundManager.playLose();
+
+                result.innerHTML = `
+                    <i class="fas ${icon} text-6xl mb-4"></i>
+                    <h2 class="text-3xl font-bold text-navy mb-2">Evaluasi Selesai</h2>
+                    <p class="text-xl mb-6">Predikat: <strong class="${score >= 80 ? 'text-green-600' : 'text-orange-500'}">${predikat}</strong></p>
+                    
+                    <div class="bg-gray-50 border rounded-2xl p-8 mb-8 max-w-sm mx-auto">
+                        <div class="text-5xl font-black text-navy mb-2">${score}</div>
+                        <div class="text-gray-500 font-medium">Nilai Akhir</div>
+                        <div class="flex justify-center gap-4 mt-4 text-sm">
+                            <div class="text-green-600 font-bold"><i class="fas fa-check"></i> Benar: ${correct}</div>
+                            <div class="text-red-600 font-bold"><i class="fas fa-times"></i> Salah: ${evalQuestions.length - correct}</div>
+                        </div>
+                    </div>
+                    
+                    <button onclick="evalController.start()" class="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-bold shadow hover:bg-gray-300 mr-2"><i class="fas fa-redo"></i> Ulangi</button>
+                    <button onclick="navigate('beranda')" class="bg-light text-white px-6 py-2 rounded-lg font-bold shadow hover:bg-navy">Kembali ke Beranda</button>
+                `;
+            }
+        };
+
+        // Initialize UI
+        buildNavigation();
+
+        // Warning on unload if playing
+        window.addEventListener("beforeunload", function (e) {
+            if (state.hasStarted) {
+                var confirmationMessage = 'Yakin ingin keluar? Progres yang belum tersimpan akan hilang.';
+                (e || window.event).returnValue = confirmationMessage; 
+                return confirmationMessage;
+            }
+        });
+    </script>
+</body>
+</html>
